@@ -16,8 +16,8 @@ module Modules
     resource :users do
       desc 'User log in', {
       # is_array: true,
-      # success: { code: 201, model: Entities::UserCreate },
-      # failure: [{ code: 406, message: 'Parameters contain errors' }]
+       success: { code: 201 }, #, model: Entities::UserCreate },
+       failure: [{ code: 400, message: 'Email is invalid' }]
       }
       params do
         requires :email, allow_blank: false, regexp: /.+@.+/, desc: 'users email'
