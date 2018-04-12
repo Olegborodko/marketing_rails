@@ -26,14 +26,34 @@ module Modules
       post :login do
         user = User.find_by email: params[:email]
         if user && token_decode(user.password)[0]['password']==params[:password]
-          token = token_encode_for_take(Time.now)
+          random_string = random_string(50)
+          token = token_encode_for_take(random_string[:part])
           user.update_column(:token, token)
-          {token: token, email: user.email}
+          {token: random_string[:full], email: user.email}
         else
-          {message: 'error'}
+          status 406
+          {error: 'Error email or password'}
         end
       end
 
+      desc 'User log out', {
+      # is_array: true,
+      success: { code: 201 } #, model: Entities::UserCreate },
+      }
+      params do
+        optional :token, type: String, documentation: { param_type: 'header' }
+        requires :email, type: String, desc: 'users email'
+      end
+      post :logout do
+        user = User.find_by email: params[:email]
+        if user && equal_tokens(user, 'Token')
+          user.update_column(:token, nil)
+          {message: 'success'}
+        else
+          status 406
+          {error: 'Data not correct'}
+        end
+      end
 
 
     end

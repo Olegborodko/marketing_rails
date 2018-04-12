@@ -21,4 +21,30 @@ module UsersHelper
       nil
     end
   end
+
+  def random_string(length)
+    result = {}
+    o = [('a'..'z'), ('A'..'Z'), (1..9)].map(&:to_a).flatten
+    string = ((0...length).map { o[rand(o.length)] }.join) + (Time.now.strftime("%Y%m%d%H%M%S%L")).to_s
+    result[:full] = string
+
+    string = string[3..string.length] #
+    result[:part] = string
+
+    result
+  end
+
+  def token_slice(token)
+    token[3..token.length] #
+  end
+
+  def equal_tokens(user, header_token_name)
+    begin
+      token_decode(user.token)[0]['token'] == token_slice(headers[header_token_name])
+    rescue
+      nil
+    end
+  end
+
+
 end
