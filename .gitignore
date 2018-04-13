@@ -12,8 +12,8 @@
 /log/*.log
 /public/system/*
 /tmp
-config/database.yml
-config/secrets.yml
+# config/database.yml
+# config/secrets.yml
 coverage/
 .DS_Store
 .envrc
