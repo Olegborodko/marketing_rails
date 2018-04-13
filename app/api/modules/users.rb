@@ -55,6 +55,27 @@ module Modules
         end
       end
 
+      desc 'User verification', {
+      # is_array: true,
+      success: { code: 201 } #, model: Entities::UserCreate },
+      }
+      params do
+        optional :token, type: String, documentation: { param_type: 'header' }
+        requires :email, type: String, desc: 'users email'
+      end
+      post :verification do
+        user = User.find_by email: params[:email]
+        if user && equal_tokens(user, 'Token')
+          random_string = random_string(50)
+          token = token_encode_for_take(random_string[:part])
+          user.update_column(:token, token)
+          {token: random_string[:full], email: user.email}
+        else
+          status 406
+          {error: 'Data not correct'}
+        end
+      end
+
 
     end
   end
