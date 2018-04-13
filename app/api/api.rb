@@ -20,6 +20,7 @@ class Api < Grape::API
   # mount Modules::Admin
   # mount Modules::FavoriteRecipes
   mount Modules::Users
+  mount Modules::Admin
 
   add_swagger_documentation add_version: true,
                             base_path: '/'

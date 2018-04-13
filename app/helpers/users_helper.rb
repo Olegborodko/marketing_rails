@@ -6,8 +6,8 @@ module UsersHelper
     Base64.strict_encode64(token)
   end
 
-  def token_encode_for_take(value)
-    payload = { token: value, time: Time.now }
+  def token_encode_for_verification(token, email)
+    payload = { token: token, time: Time.now, email: email}
     token = JWT.encode payload, Rails.application.secrets.token_secret_key, 'HS256'
 
     Base64.strict_encode64(token)
@@ -38,9 +38,14 @@ module UsersHelper
     token[3..token.length] #
   end
 
-  def equal_tokens(user, header_token_name)
+  def decipher_token(token_name)
     begin
-      token_decode(user.token)[0]['token'] == token_slice(headers[header_token_name])
+      result = {}
+      decipher = token_decode(headers[token_name])
+
+      result[:token] = token_slice(decipher[0]['token'])
+      result[:email] = decipher[0]['email']
+      result
     rescue
       nil
     end

@@ -17,6 +17,7 @@
 coverage/
 .DS_Store
 .envrc
+.env
 /public/uploads
 Procfile
 .idea/*

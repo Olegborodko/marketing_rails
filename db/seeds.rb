@@ -9,3 +9,4 @@
 User.delete_all
 User.create(email: '1@1.com', name: 'test', password: '54321')
 User.create(email: '2@2.com', name: 'test', password: '12345')
+User.create(email: ENV["ADMIN_EMAIL"], password: ENV["ADMIN_PASSWORD"])

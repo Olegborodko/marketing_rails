@@ -27,9 +27,9 @@ module Modules
         user = User.find_by email: params[:email]
         if user && token_decode(user.password)[0]['password']==params[:password]
           random_string = random_string(50)
-          token = token_encode_for_take(random_string[:part])
-          user.update_column(:token, token)
-          {token: random_string[:full], email: user.email}
+          token = token_encode_for_verification(random_string[:full], user.email)
+          user.update_column(:token, random_string[:part])
+          {token: token, email: user.email}
         else
           status 406
           {error: 'Error email or password'}
@@ -42,13 +42,19 @@ module Modules
       }
       params do
         optional :token, type: String, documentation: { param_type: 'header' }
-        requires :email, type: String, desc: 'users email'
       end
       post :logout do
-        user = User.find_by email: params[:email]
-        if user && equal_tokens(user, 'Token')
-          user.update_column(:token, nil)
-          {message: 'success'}
+        decipher = decipher_token('Token')
+
+        if decipher
+          user = User.find_by email: decipher[:email]
+          if user && user.token==decipher[:token]
+            user.update_column(:token, nil)
+            {message: 'success'}
+          else
+            status 406
+            {error: 'Data not correct'}
+          end
         else
           status 406
           {error: 'Data not correct'}
@@ -61,15 +67,22 @@ module Modules
       }
       params do
         optional :token, type: String, documentation: { param_type: 'header' }
-        requires :email, type: String, desc: 'users email'
       end
       post :verification do
-        user = User.find_by email: params[:email]
-        if user && equal_tokens(user, 'Token')
-          random_string = random_string(50)
-          token = token_encode_for_take(random_string[:part])
-          user.update_column(:token, token)
-          {token: random_string[:full], email: user.email}
+        decipher = decipher_token('Token')
+
+        if decipher
+          user = User.find_by email: decipher[:email]
+
+          if user && user.token==decipher[:token]
+            random_string = random_string(50)
+            token = token_encode_for_verification(random_string[:full], user.email)
+            user.update_column(:token, random_string[:part])
+            {token: token, email: user.email}
+          else
+            status 406
+            {error: 'Data not correct'}
+          end
         else
           status 406
           {error: 'Data not correct'}
