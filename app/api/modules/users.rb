@@ -7,17 +7,17 @@ module Modules
       include UsersHelper
     end
 
-    # before do
-    #   @current_user = get_user_from_token(users_token)
-    # end
+    before do
+      @current_user = current_user('Token')
+    end
 
     # POST api/users
     resource :users do
 
       desc 'User log in', {
       # is_array: true,
-       success: { code: 201 }, #, model: Entities::UserCreate },
-       failure: [{ code: 400, message: 'Email is invalid' }]
+      success: { code: 201 }, #, model: Entities::UserCreate },
+      failure: [{ code: 400, message: 'Email is invalid' }]
       }
       params do
         requires :email, allow_blank: false, regexp: /.+@.+/, desc: 'users email'
@@ -44,17 +44,9 @@ module Modules
         optional :token, type: String, documentation: { param_type: 'header' }
       end
       post :logout do
-        decipher = decipher_token('Token')
-
-        if decipher
-          user = User.find_by email: decipher[:email]
-          if user && user.token==decipher[:token]
-            user.update_column(:token, nil)
-            {message: 'success'}
-          else
-            status 406
-            {error: 'Data not correct'}
-          end
+        if @current_user
+          @current_user.update_column(:token, nil)
+          return {message: 'success'}
         else
           status 406
           {error: 'Data not correct'}
@@ -69,24 +61,14 @@ module Modules
         optional :token, type: String, documentation: { param_type: 'header' }
       end
       post :verification do
-        decipher = decipher_token('Token')
-
-        if decipher
-          user = User.find_by email: decipher[:email]
-
-          if user && user.token==decipher[:token]
-            random_string = random_string(50)
-            token = token_encode_for_verification(random_string[:full], user.email)
-            user.update_column(:token, random_string[:part])
-            {token: token, email: user.email}
-          else
-            status 406
-            {error: 'Data not correct'}
+        if @current_user
+          new_t = new_token(@current_user)
+          if new_t
+            return {token: new_t[:token], email: @current_user[:email]}
           end
-        else
-          status 406
-          {error: 'Data not correct'}
         end
+        status 406
+        {error: 'Data not correct'}
       end
 
 

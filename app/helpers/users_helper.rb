@@ -47,9 +47,38 @@ module UsersHelper
       result[:email] = decipher[0]['email']
       result
     rescue
-      nil
+      false
     end
   end
 
+  def new_token(user)
+    begin
+      result = {}
+      random_string = random_string(50)
+      token = token_encode_for_verification(random_string[:full], user.email)
+      user.update_column(:token, random_string[:part])
+
+      result[:email] = user.email
+      result[:token] = token
+      result
+    rescue
+      false
+    end
+  end
+
+  def current_user(token_name)
+    decipher = decipher_token(token_name)
+    if decipher
+      user = User.find_by email: decipher[:email]
+      if user && user.token==decipher[:token]
+        return user
+      end
+    end
+    false
+  end
+
+  def admin?(email)
+    email == ENV["ADMIN_EMAIL"]
+  end
 
 end
