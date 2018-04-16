@@ -25,9 +25,9 @@ module Modules
       end
       post :users do
         if @admin_correct
-          new_token = new_token(@current_user)
+          #new_token = new_token(@current_user)
           users = User.order(:email)
-          return {token: new_token[:token], email: new_token[:email], users: users}
+          return {users: users}
         end
         status 406
         {error: 'Data not correct'}
@@ -50,11 +50,8 @@ module Modules
                               email: params[:email],
                               password: params[:password])
           if user_new.save
-            new_token = new_token(@current_user)
-            return {message: 'success',
-                    token: new_token[:token],
-                    email: new_token[:email]
-            }
+            #new_token = new_token(@current_user)
+            return {user: user_new}
           end
         end
         status 406
@@ -74,11 +71,8 @@ module Modules
         if @admin_correct
           user = User.find_by email: params[:email]
           if user && user.destroy
-            new_token = new_token(@current_user)
-            return {message: 'success',
-                    token: new_token[:token],
-                    email: new_token[:email]
-            }
+            #new_token = new_token(@current_user)
+            return {message: 'success'}
           end
         end
         status 406
